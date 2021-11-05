@@ -1,0 +1,9 @@
+rootProject.name = 'spring-oauth2-jwk'
+include 'common-contract-avro'
+include 'common-contract-proto'
+include 'ms-email-producer'
+include 'ms-email-consumer'
+include 'common'
+include 'ms-resource-server'
+include 'ms-authorization-server'
+

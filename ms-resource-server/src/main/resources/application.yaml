@@ -1,0 +1,17 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /resource
+
+security:
+  oauth2:
+    resource:
+      jwk:
+        key-set-uri: http://ms-authorization-server:8081/sso-auth-server/.well-known/jwks.json
+
+logging:
+  level:
+    root: INFO
+    org: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
