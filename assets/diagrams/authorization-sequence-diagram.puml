@@ -1,0 +1,24 @@
+@startuml
+
+actor user as user
+participant resource as "Resource Server"
+participant auth as "Authorization Server"
+
+group 1. Get All Keys JWKS
+resource -> auth: 1.0. Get All Trusted Public Certifications (Public Keys)
+resource <- auth: 1.1. Retrieve and Store Certifications (Public Keys)
+end group
+
+group 2. Authenication
+user -> auth: 2.0. Authenticate as "intellias-client-id"
+auth <- user: 2.1. Successfully authenticated (with access token)
+end
+
+group Retieve protected resource
+user -> resource: 3.0. Get Profile Info (Protected Resource) with access token
+resource -> resource: 3.1. Validate token and signature with public key (which retrieved in 1.1.)
+resource -> resource: 3.2. Check user has privileged for the resource
+resource <- user: 3.3. Retrieve protected resource
+end group
+
+@enduml
