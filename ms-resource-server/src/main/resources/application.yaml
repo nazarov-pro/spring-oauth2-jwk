@@ -2,12 +2,16 @@ server:
   port: 8082
   servlet:
     context-path: /resource
+app:
+  authorization-server:
+    hostname: ms-authorization-server
+    port: 8081
 
 security:
   oauth2:
     resource:
       jwk:
-        key-set-uri: http://ms-authorization-server:8081/sso-auth-server/.well-known/jwks.json
+        key-set-uri: http://${app.authorization-server.hostname}:${app.authorization-server.port}/sso-auth-server/.well-known/jwks.json
 
 logging:
   level:

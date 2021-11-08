@@ -1,8 +1,13 @@
 package com.intellias.oauth.as.configs;
 
+import static com.intellias.oauth.as.configs.JwtAuthorizationServerConfiguration.INTELLIAS_JWK_KID;
+
 import java.security.KeyPair;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.jwt.crypto.sign.RsaSigner;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -11,16 +16,14 @@ import org.springframework.security.oauth2.common.util.JsonParserFactory;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
+@Configuration
 public class JwtCustomHeadersAccessTokenConverter extends JwtAccessTokenConverter {
-    private final Map<String, String> customHeaders;
     private final JsonParser objectMapper = JsonParserFactory.create();
-    private final RsaSigner signer;
+    private final Map<String, KeyPair> jwkKeys;
 
-    public JwtCustomHeadersAccessTokenConverter(Map<String, String> customHeaders, KeyPair keyPair) {
+    public JwtCustomHeadersAccessTokenConverter(final Map<String, KeyPair> jwkKeys) {
         super();
-        super.setKeyPair(keyPair);
-        this.signer = new RsaSigner((RSAPrivateKey) keyPair.getPrivate());
-        this.customHeaders = customHeaders;
+        this.jwkKeys = jwkKeys;
     }
 
     @Override
@@ -32,6 +35,13 @@ public class JwtCustomHeadersAccessTokenConverter extends JwtAccessTokenConverte
         } catch (Exception ex) {
             throw new IllegalStateException("Cannot convert access token to JSON", ex);
         }
-        return JwtHelper.encode(content, this.signer, this.customHeaders).getEncoded();
+        final var jwkKeyId = authentication.getOAuth2Request().getRequestParameters()
+                .getOrDefault("client", INTELLIAS_JWK_KID);
+
+        final var keyPair = jwkKeys.get(jwkKeyId);
+        Objects.requireNonNull(keyPair);
+        final var customHeaders = Map.of("kid", jwkKeyId);
+        return JwtHelper.encode(content, new RsaSigner((RSAPrivateKey) keyPair.getPrivate()), customHeaders)
+                .getEncoded();
     }
 }
